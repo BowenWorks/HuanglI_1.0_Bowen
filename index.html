@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>Bowen 专属黄历</title>
+  <style>
+    body {
+      font-family: "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #fdfcfb, #e2d1c3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      padding: 30px;
+      max-width: 600px;
+      width: 95%;
+      text-align: center;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 8px;
+      color: #333;
+    }
+    .date {
+      font-size: 1rem;
+      color: #666;
+      margin-bottom: 20px;
+    }
+    .section {
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      text-align: left;
+      line-height: 1.6;
+    }
+    .yi { background: #e8f8f2; color: #2c7a7b; }
+    .ji { background: #fdecea; color: #c53030; }
+    .note { background: #fef3c7; color: #92400e; }
+    .advice { background: #ebf8ff; color: #2b6cb0; }
+    .extra { background: #f3f4f6; color: #1f2937; }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Bowen 专属黄历</h1>
+    <div class="date" id="date">加载中...</div>
+    <div class="section yi" id="yi"></div>
+    <div class="section ji" id="ji"></div>
+    <div class="section note" id="note"></div>
+    <div class="section advice" id="advice"></div>
+    <div class="section extra" id="color"></div>
+    <div class="section extra" id="wear"></div>
+    <div class="section extra" id="road"></div>
+    <div class="section extra" id="mind"></div>
+    <div class="section extra" id="place"></div>
+  </div>
+
+  <script>
+    // Bowen 出生信息
+    const birth = { year: 2002, month: 6, day: 29, hour: 15 }; // 下午3点
+
+    // 天干地支
+    const tiangan = ["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+    const dizhi = ["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+
+const yiJiTable = {
+  "甲子": { yi:"阅读、策划、轻运动", ji:"大声社交、应酬", note:"保持安静心态", advice:"独处整理思绪", color:"浅蓝、米色、淡绿", wear:"素色简洁", road:"骑行注意头盔与湿滑路面", mind:"保持专注", place:"家、公园、美术馆" },
+  "乙丑": { yi:"轻松创作、短途散步", ji:"长时间盯屏或复杂事务", note:"注意交通安全", advice:"放松缓解压力", color:"米黄色、浅灰", wear:"舒适利落", road:"骑行慢速避开人多", mind:"平和心态", place:"公园、自然人少" },
+  "丙寅": { yi:"冥想、读书、绘画", ji:"激烈运动、应酬", note:"谨防冲动", advice:"保持平稳心态", color:"红色、橙色", wear:"轻便舒适", road:"注意骑行安全", mind:"专注情绪调节", place:"美术馆、公园" },
+  "丁卯": { yi:"散步、轻运动、阅读", ji:"熬夜、应酬", note:"避免长途奔波", advice:"适合锻炼与放松", color:"绿色、米白", wear:"休闲装", road:"骑行注意慢速", mind:"保持耐心", place:"公园、自然人少" },
+  "戊辰": { yi:"策划、整理、短途游", ji:"争执、动土", note:"注意交通安全", advice:"轻松规划日程", color:"黄色、卡其", wear:"舒适简洁", road:"骑行注意避开车流", mind:"平和放松", place:"家、公园" },
+  "己巳": { yi:"阅读、冥想、轻运动", ji:"激烈运动、争执", note:"避免急躁", advice:"适合静心", color:"浅棕、米白", wear:"舒适简约", road:"骑行注意路面", mind:"保持专注", place:"美术馆、公园" },
+  "庚午": { yi:"社交轻松、短途散步", ji:"繁忙应酬", note:"注意身体劳累", advice:"适合休闲社交", color:"蓝色、灰色", wear:"利落素色", road:"骑行注意车距", mind:"保持耐心", place:"公园、自然人少" },
+  "辛未": { yi:"冥想、读书、散步", ji:"激烈运动、熬夜", note:"避免过度消耗", advice:"适合做家务或轻松运动", color:"浅紫、灰蓝", wear:"舒适自然", road:"骑行注意安全", mind:"放松心态", place:"家、公园" },
+  "壬申": { yi:"短途游、公园散步、阅读", ji:"争执、长时间紧张工作", note:"注意金钱与人际关系", advice:"轻松心态", color:"青色、白色", wear:"简约自然", road:"骑行注意避开繁忙路段", mind:"保持耐心", place:"公园、美术馆" },
+  "癸酉": { yi:"阅读、冥想、整理", ji:"应酬、长时间盯屏", note:"谨防小人及争吵", advice:"适合静心整理", color:"浅灰、白色", wear:"舒适简约", road:"骑行注意安全", mind:"专注放松", place:"家、公园" },
+  "甲戌": { yi:"策划、整理、短途游", ji:"动土、应酬", note:"注意心情调节", advice:"适合轻松工作", color:"淡蓝、卡其", wear:"素色舒适", road:"骑行注意", mind:"放松心态", place:"家、公园" },
+  "乙亥": { yi:"散步、阅读、轻运动", ji:"激烈运动、应酬", note:"小心饮食与安全", advice:"保持平稳心态", color:"淡绿、米色", wear:"简洁自然", road:"骑行注意路面", mind:"专注和放松", place:"公园、美术馆" },
+  "丙子": { yi:"冥想、创作、短途游", ji:"熬夜、繁忙应酬", note:"保持安静心态", advice:"适合独处", color:"红色、橙色", wear:"轻便舒适", road:"骑行注意慢速", mind:"稳定心态", place:"家、公园" },
+  "丁丑": { yi:"阅读、整理、轻运动", ji:"应酬、激烈运动", note:"避免长途奔波", advice:"轻松规划日程", color:"绿色、米白", wear:"休闲装", road:"骑行注意安全", mind:"耐心放松", place:"公园、自然" },
+  "戊寅": { yi:"策划、绘画、散步", ji:"激烈运动、争执", note:"注意安全与心情", advice:"适合静心", color:"黄色、米色", wear:"舒适简约", road:"骑行注意", mind:"放松心态", place:"家、公园" },
+  "己卯": { yi:"冥想、阅读、轻运动", ji:"熬夜、应酬", note:"避免疲劳过度", advice:"保持专注", color:"浅棕、米白", wear:"自然舒适", road:"骑行注意", mind:"平和放松", place:"美术馆、公园" },
+  "庚辰": { yi:"社交轻松、短途游", ji:"繁忙应酬、争执", note:"注意身体与交通安全", advice:"适合轻松活动", color:"蓝色、灰色", wear:"素色利落", road:"骑行慢速", mind:"放松心态", place:"公园、自然" },
+  "辛巳": { yi:"冥想、阅读、散步", ji:"激烈运动、熬夜", note:"避免过度消耗", advice:"适合静心", color:"浅紫、灰蓝", wear:"舒适自然", road:"骑行注意", mind:"平稳心态", place:"家、公园" },
+  "壬午": { yi:"公园散步、阅读、轻运动", ji:"长时间紧张工作、争执", note:"注意休息", advice:"轻松放松", color:"青色、白色", wear:"简约舒适", road:"骑行安全", mind:"专注放松", place:"公园、美术馆" },
+  "癸未": { yi:"阅读、整理、短途游", ji:"熬夜、应酬", note:"注意心情", advice:"轻松安排事务", color:"浅灰、米色", wear:"舒适自然", road:"骑行注意", mind:"放松心态", place:"家、公园" },
+  "甲申": { yi:"冥想、创作、散步", ji:"应酬、激烈运动", note:"小心冲动", advice:"保持冷静", color:"浅蓝、绿色", wear:"简约舒适", road:"骑行注意", mind:"专注与放松", place:"公园、美术馆" },
+  "乙酉": { yi:"阅读、策划、轻运动", ji:"长时间盯屏、应酬", note:"注意安全与心情", advice:"轻松处理事务", color:"米黄色、灰色", wear:"自然简约", road:"骑行安全", mind:"保持平和", place:"家、公园" },
+  "丙戌": { yi:"整理、短途游、散步", ji:"争执、熬夜", note:"注意心态调节", advice:"适合轻松活动", color:"红色、橙色", wear:"舒适自然", road:"骑行慢速", mind:"放松心态", place:"公园、自然" },
+  "丁亥": { yi:"冥想、阅读、散步", ji:"激烈运动、应酬", note:"避免过度劳累", advice:"轻松安排事务", color:"绿色、米白", wear:"休闲舒适", road:"骑行注意", mind:"平和专注", place:"美术馆、公园" },
+  "戊子": { yi:"策划、整理、轻运动", ji:"繁忙应酬、争执", note:"注意心态和交通", advice:"适合独处或轻松活动", color:"黄色、卡其", wear:"素色舒适", road:"骑行注意", mind:"放松专注", place:"家、公园" },
+  "己丑": { yi:"阅读、短途散步、冥想", ji:"熬夜、激烈运动", note:"注意休息", advice:"轻松安排行程", color:"浅棕、米白", wear:"自然舒适", road:"骑行注意", mind:"平稳心态", place:"公园、美术馆" },
+  "庚寅": { yi:"绘画、策划、散步", ji:"应酬、争执", note:"注意安全与情绪", advice:"保持轻松", color:"蓝色、灰色", wear:"简约舒适", road:"骑行注意", mind:"平和放松", place:"公园、自然" },
+  "辛卯": { yi:"冥想、阅读、轻运动", ji:"熬夜、激烈运动", note:"避免过度劳累", advice:"适合静心", color:"浅紫、灰蓝", wear:"舒适自然", road:"骑行注意", mind:"专注平和", place:"家、公园" },
+  "壬辰": { yi:"散步、公园短途游、阅读", ji:"争执、应酬", note:"注意交通与心态", advice:"保持轻松", color:"青色、白色", wear:"简约舒适", road:"骑行注意", mind:"平稳放松", place:"公园、美术馆" },
+  "癸巳": { yi:"阅读、整理、轻运动", ji:"熬夜、激烈运动", note:"避免疲劳", advice:"轻松安排日程", color:"浅灰、米色", wear:"舒适自然", road:"骑行注意", mind:"专注放松", place:"家、公园" },
+  "甲午": { yi:"公园散步、冥想、阅读", ji:"应酬、争执", note:"注意心态与安全", advice:"轻松放松", color:"浅蓝、绿色", wear:"舒适简约", road:"骑行注意", mind:"平和专注", place:"公园、美术馆" },
+  "乙未": { yi:"轻松创作、阅读、散步", ji:"激烈运动、熬夜", note:"注意心情", advice:"适合独处", color:"米黄色、浅灰", wear:"自然舒适", road:"骑行慢速", mind:"放松心态", place:"家、公园" },
+  "丙申": { yi:"冥想、整理、短途游", ji:"争执、应酬", note:"注意安全与情绪", advice:"轻松安排", color:"红色、橙色", wear:"舒适自然", road:"骑行注意", mind:"平和专注", place:"公园、自然" },
+  "丁酉": { yi:"阅读、策划、散步", ji:"激烈运动、熬夜", note:"保持心态平稳", advice:"适合轻松活动", color:"绿色、米白", wear:"休闲舒适", road:"骑行注意", mind:"放松专注", place:"美术馆、公园" },
+  "戊戌": { yi:"整理、短途游、轻运动", ji:"应酬、争执", note:"注意交通和心态", advice:"轻松安排日程", color:"黄色、卡其", wear:"素色舒适", road:"骑行慢速", mind:"平和放松", place:"家、公园" },
+  "己亥": { yi:"冥想、阅读、散步", ji:"激烈运动、熬夜", note:"注意休息", advice:"适合静心", color:"浅棕、米白", wear:"自然舒适", road:"骑行注意", mind:"专注平和", place:"公园、美术馆" }
+};
+
+
+    // 获取今日干支
+    function getGanZhiDay(date) {
+      const baseDate = new Date(1900,0,31); // 1900-01-31 农历基准
+      const offset = Math.floor((date - baseDate) / 86400000);
+      const gan = tiangan[offset % 10];
+      const zhi = dizhi[offset % 12];
+      return gan + zhi;
+    }
+
+    function updateUI() {
+      const today = new Date();
+      const dateStr = today.getFullYear()+"-"+(today.getMonth()+1)+"-"+today.getDate();
+      const ganzhi = getGanZhiDay(today);
+
+      const yiJi = yiJiTable[ganzhi] || { 
+        yi: "安静修养", ji: "应酬繁忙", 
+        note:"随遇而安", advice:"保持轻松心态",
+        color:"浅色系",
+        wear:"舒适简洁",
+        road:"出行注意安全",
+        mind:"放松",
+        place:"家、公园、美术馆"
+      };
+
+      document.getElementById("date").textContent = `${dateStr} ｜ 日柱：${ganzhi}`;
+      document.getElementById("yi").textContent = "宜：" + yiJi.yi;
+      document.getElementById("ji").textContent = "忌：" + yiJi.ji;
+      document.getElementById("note").textContent = "注意事项：" + yiJi.note;
+      document.getElementById("advice").textContent = "建议：" + yiJi.advice;
+      document.getElementById("color").textContent = "幸运颜色：" + yiJi.color;
+      document.getElementById("wear").textContent = "穿着建议：" + yiJi.wear;
+      document.getElementById("road").textContent = "路上注意：" + yiJi.road;
+      document.getElementById("mind").textContent = "心态提示：" + yiJi.mind;
+      document.getElementById("place").textContent = "适合地点：" + yiJi.place;
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
